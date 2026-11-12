@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>FOOTBAL 22 LEAGUE 3D</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;overflow:hidden;background:#152b18;font-family:Arial;color:white}
+#hud{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:#111d;padding:12px 22px;border-radius:12px;font-size:21px;font-weight:bold;z-index:2}
+#help{position:absolute;top:62px;left:50%;transform:translateX(-50%);font-size:12px;background:#111b;padding:7px;border-radius:8px;z-index:2;white-space:nowrap}
+#controls{position:absolute;bottom:15px;width:100%;display:flex;justify-content:space-between;padding:0 18px;align-items:end;z-index:3}
+.pad{display:grid;grid-template-columns:52px 52px 52px;gap:5px}
+.actions{display:flex;align-items:end}
+button{height:52px;width:52px;border:2px solid #fff8;border-radius:13px;background:#172d48dd;color:white;font-size:22px;font-weight:bold;touch-action:none}
+#kick{width:78px;height:78px;border-radius:50%;background:#d94324;font-size:15px}
+</style>
+</head>
+<body>
+<div id="hud">AZUL <span id="score">0 - 0</span> VERMELHO</div>
+<div id="help">FOOTBAL 22 LEAGUE • PARTIDA 3D</div>
+<div id="controls">
+<div class="pad">
+<span></span><button data-key="up">▲</button><span></span>
+<button data-key="left">◀</button><button data-key="down">▼</button><button data-key="right">▶</button>
+</div>
+<div class="actions"><button id="kick">CHUTE</button></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script>
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x83b8dc);
+scene.fog=new THREE.Fog(0x83b8dc,100,180);
+
+const camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,300);
+camera.position.set(0,75,88);
+camera.lookAt(0,0,0);
+
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x31502c,2));
+const sun=new THREE.DirectionalLight(0xffffff,2);
+sun.position.set(-30,60,30);
+sun.castShadow=true;
+scene.add(sun);
+
+function mat(c){return new THREE.MeshStandardMaterial({color:c,roughness:.8})}
+
+const grass=mat(0x238b36);
+const field=new THREE.Mesh(new THREE.PlaneGeometry(110,70),grass);
+field.rotation.x=-Math.PI/2;
+field.receiveShadow=true;
+scene.add(field);
+
+for(let i=0;i<10;i++){
+ const stripe=new THREE.Mesh(new THREE.PlaneGeometry(11,70),mat(i%2?0x218334:0x27933c));
+ stripe.rotation.x=-Math.PI/2;
+ stripe.position.set(-49.5+i*11,.015,0);
+ scene.add(stripe);
+}
+
+function line(points){
+ const g=new THREE.BufferGeometry().setFromPoints(points.map(p=>new THREE.Vector3(p[0],.07,p[1])));
+ scene.add(new THREE.Line(g,new THREE.LineBasicMaterial({color:0xffffff})));
+}
+line([[-50,-30],[50,-30],[50,30],[-50,30],[-50,-30]]);
+line([[0,-30],[0,30]]);
+function circle(r,x,z){
+ let p=[];
+ for(let i=0;i<=80;i++){let a=i*Math.PI*2/80;p.push([x+Math.cos(a)*r,z+Math.sin(a)*r]);}
+ line(p);
+}
+circle(9,0,0);
+circle(.7,0,0);
+line([[-50,-10],[-39,-10],[-39,10],[-50,10]]);
+line([[50,-10],[39,-10],[39,10],[50,10]]);
+line([[-50,-18],[-44,-18],[-44,18],[-50,18]]);
+line([[50,-18],[44,-18],[44,18],[50,18]]);
+
+function goal(x){
+ const white=mat(0xffffff);
+ [-10,10].forEach(z=>{
+  let post=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,7,10),white);
+  post.position.set(x,3.5,z);scene.add(post);
+ });
+ let bar=new THREE.Mesh(new THREE.BoxGeometry(.4,.35,20),white);
+ bar.position.set(x,7,0);scene.add(bar);
+}
+goal(-50);goal(50);
+
+function makePlayer(color,x,z){
+ const group=new THREE.Group();
+ const shirt=mat(color),skin=mat(0xe4b58c),shorts=mat(0x182238);
+ let body=new THREE.Mesh(new THREE.CylinderGeometry(1,1.2,3,12),shirt);
+ body.position.y=3.1;body.castShadow=true;group.add(body);
+ let head=new THREE.Mesh(new THREE.SphereGeometry(.8,16,12),skin);
+ head.position.y=5.25;head.castShadow=true;group.add(head);
+ let legs=[];
+ for(let s of [-1,1]){
+  let leg=new THREE.Mesh(new THREE.CylinderGeometry(.3,.4,2,10),shorts);
+  leg.position.set(s*.45,1,0);group.add(leg);legs.push(leg);
+  let arm=new THREE.Mesh(new THREE.CylinderGeometry(.22,.3,2,10),skin);
+  arm.position.set(s*1.2,3.2,0);arm.rotation.z=s*.2;group.add(arm);
+ }
+ group.position.set(x,0,z);scene.add(group);
+ return {mesh:group,legs};
+}
+
+const blue=makePlayer(0x087bfa,-20,0);
+const reds=[
+ makePlayer(0xe32c32,20,0),
+ makePlayer(0xe32c32,8,-16),
+ makePlayer(0xe32c32,8,16),
+ makePlayer(0xe32c32,34,-12),
+ makePlayer(0xe32c32,34,12)
+];
+const blues=[
+ blue,
+ makePlayer(0x087bfa,-8,-16),
+ makePlayer(0x087bfa,-8,16),
+ makePlayer(0x087bfa,-34,-12),
+ makePlayer(0x087bfa,-34,12)
+];
+
+const ball=new THREE.Mesh(
+ new THREE.SphereGeometry(.85,24,18),
+ new THREE.MeshStandardMaterial({color:0xffffff,roughness:.4})
+);
+ball.position.set(-18,.9,0);
+ball.castShadow=true;
+scene.add(ball);
+
+const keys={};
+let velocity=new THREE.Vector3();
+let scoreBlue=0,scoreRed=0;
+let lastTime=0;
+
+function updateScore(){
+ document.getElementById("score").textContent=scoreBlue+" - "+scoreRed;
+}
+
+function shoot(){
+ const p=blue.mesh.position;
+ const d=Math.hypot(ball.position.x-p.x,ball.position.z-p.z);
+ if(d<5){
+  let direction=new THREE.Vector3(
+   Math.cos(blue.mesh.rotation.y),0,
+   -Math.sin(blue.mesh.rotation.y)
+  );
+  velocity.add(direction.multiplyScalar(1.3));
+  velocity.y=.22;
+ }
+}
+document.getElementById("kick").addEventListener("pointerdown",e=>{e.preventDefault();shoot()});
+
+document.querySelectorAll("[data-key]").forEach(b=>{
+ const k=b.dataset.key;
+ b.addEventListener("pointerdown",e=>{e.preventDefault();keys[k]=true});
+ ["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,()=>keys[k]=false));
+});
+
+window.addEventListener("keydown",e=>{
+ let k=e.key.toLowerCase();
+ if(k==="arrowup"||k==="w")keys.up=true;
+ if(k==="arrowdown"||k==="s")keys.down=true;
+ if(k==="arrowleft"||k==="a")keys.left=true;
+ if(k==="arrowright"||k==="d")keys.right=true;
+ if(k===" ")shoot();
+});
+window.addEventListener("keyup",e=>{
+ let k=e.key.toLowerCase();
+ if(k==="arrowup"||k==="w")keys.up=false;
+ if(k==="arrowdown"||k==="s")keys.down=false;
+ if(k==="arrowleft"||k==="a")keys.left=false;
+ if(k==="arrowright"||k==="d")keys.right=false;
+});
+
+function movePlayer(dt){
+ let dx=0,dz=0;
+ if(keys.up)dz-=1;
+ if(keys.down)dz+=1;
+ if(keys.left)dx-=1;
+ if(keys.right)dx+=1;
+ if(dx||dz){
+  let len=Math.hypot(dx,dz);
+  dx/=len;dz/=len;
+  blue.mesh.position.x+=dx*18*dt;
+  blue.mesh.position.z+=dz*18*dt;
+  blue.mesh.rotation.y=Math.atan2(dx,dz);
+  blue.legs.forEach((l,i)=>l.rotation.x=Math.sin(Date.now()*.015+i*Math.PI)*.5);
+ }
+ blue.mesh.position.x=THREE.MathUtils.clamp(blue.mesh.position.x,-47,47);
+ blue.mesh.position.z=THREE.MathUtils.clamp(blue.mesh.position.z,-27,27);
+}
+
+function aiMove(dt){
+ reds.forEach((p,i)=>{
+  let pos=p.mesh.position;
+  let tx=ball.position.x;
+  let tz=ball.position.z+(i-2)*2;
+  let dx=tx-pos.x,dz=tz-pos.z;
+  let d=Math.hypot(dx,dz);
+  if(d>1.8){
+   pos.x+=dx/d*8*dt;
+   pos.z+=dz/d*8*dt;
+   p.mesh.rotation.y=Math.atan2(dx,dz);
+  }
+  if(d<2.2&&ball.position.x>0){
+   velocity.x-=.4;
+   velocity.z+=(Math.random()-.5)*.5;
+  }
+ });
+}
+
+function resetBall(){
+ ball.position.set(0,.9,0);
+ velocity.set(0,0,0);
+ blue.mesh.position.set(-20,0,0);
+}
+
+function animate(time){
+ requestAnimationFrame(animate);
+ let dt=Math.min((time-lastTime)/1000,.04);
+ lastTime=time;
+ movePlayer(dt);
+ aiMove(dt);
+
+ velocity.y-=9.8*dt;
+ ball.position.addScaledVector(velocity,dt);
+ if(ball.position.y<.85){
+  ball.position.y=.85;
+  velocity.y=Math.abs(velocity.y)*.45;
+  if(velocity.y<.3)velocity.y=0;
+ }
+ velocity.x*=Math.pow(.985,dt*60);
+ velocity.z*=Math.pow(.985,dt*60);
+ ball.rotation.x+=velocity.z*dt;
+ ball.rotation.z-=velocity.x*dt;
+
+ if(ball.position.z>29||ball.position.z<-29)velocity.z*=-.7;
+ if(ball.position.x>49||ball.position.x<-49){
+  if(Math.abs(ball.position.z)<9){
+   if(ball.position.x>49)scoreBlue++;
+   else scoreRed++;
+   updateScore();resetBall();
+  }else velocity.x*=-.7;
+ }
+ ball.position.x=THREE.MathUtils.clamp(ball.position.x,-51,51);
+ ball.position.z=THREE.MathUtils.clamp(ball.position.z,-30,30);
+
+ let dx=ball.position.x-blue.mesh.position.x;
+ let dz=ball.position.z-blue.mesh.position.z;
+ if(Math.hypot(dx,dz)<2&&ball.position.y<2){
+  velocity.x+=dx*.025;
+  velocity.z+=dz*.025;
+ }
+
+ camera.position.x=THREE.MathUtils.lerp(camera.position.x,0,.02);
+ camera.position.z=THREE.MathUtils.lerp(camera.position.z,88,.02);
+ camera.lookAt(0,0,0);
+ renderer.render(scene,camera);
+}
+requestAnimationFrame(animate);
+
+window.addEventListener("resize",()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
+</script>
+</body>
+</html>
