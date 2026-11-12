@@ -1,247 +1,355 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#071b12">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>FOOTBAL 22 LEAGUE</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#071b12;color:white;font-family:Arial;text-align:center}
-header{background:#102d1c;padding:20px}
-h1{color:#ffd700;margin:5px}
-h2{color:#ffd700}
-.panel{background:#143522;border:1px solid #326b43;border-radius:14px;padding:16px;margin:14px auto;width:94%;max-width:480px}
-button,select,input{padding:13px;border:0;border-radius:9px;font-size:16px;margin:5px}
-button{background:#f3c900;color:#111;font-weight:bold}
-input,select{width:90%;max-width:350px}
-.green{background:#168b42;color:white}
-.blue{background:#1675ff;color:white}
-.red{background:#d93636;color:white}
-.stat{display:flex;justify-content:space-between;margin:10px 0}
-.bar{height:10px;background:#555;border-radius:8px;overflow:hidden}
-.bar span{display:block;height:100%;background:#f3c900}
-.hidden{display:none!important}
-#field{height:400px;max-width:440px;width:94%;margin:auto;background:repeating-linear-gradient(0deg,#168b42,#168b42 65px,#137b39 65px,#137b39 130px);border:4px solid white;position:relative;overflow:hidden}
-#field:after{content:"";position:absolute;left:0;top:50%;width:100%;border-top:2px solid white}
-#player{position:absolute;width:35px;height:35px;border-radius:50%;background:#1675ff;border:3px solid white;z-index:3;left:50%;top:75%}
-#ball{position:absolute;width:17px;height:17px;border-radius:50%;background:white;border:2px solid black;z-index:4;left:52%;top:70%}
-#goal{position:absolute;top:0;left:32%;width:36%;height:35px;border:4px solid white;border-top:0}
-.controls{display:flex;justify-content:center;gap:15px;margin:15px}
-.pad{display:grid;grid-template-columns:48px 48px 48px;gap:4px}
-.pad button{padding:12px 3px}
-#message{min-height:30px;color:#ffe36b}
-small{color:#c9d7ce}
+body{margin:0;background:#071526;color:white;font-family:Arial;overflow:hidden}
+#top{position:absolute;top:10px;left:0;width:100%;text-align:center;z-index:5;pointer-events:none}
+#title{font-size:19px;font-weight:bold;text-shadow:0 2px 5px black}
+#score{font-size:25px;font-weight:bold;margin-top:5px}
+#message{font-size:13px;margin-top:4px}
+#controls{position:absolute;bottom:18px;left:0;width:100%;display:flex;justify-content:space-between;align-items:end;padding:0 15px;z-index:8;pointer-events:none}
+.pad{display:grid;grid-template-columns:48px 48px 48px;grid-template-rows:48px 48px 48px;gap:4px;pointer-events:auto}
+.btn{border:1px solid #ffffff88;background:#102b4ddd;color:white;border-radius:12px;font-size:20px;font-weight:bold;touch-action:none}
+.pad .up{grid-column:2;grid-row:1}
+.pad .left{grid-column:1;grid-row:2}
+.pad .down{grid-column:2;grid-row:2}
+.pad .right{grid-column:3;grid-row:2}
+.actions{display:flex;flex-direction:column;gap:9px;pointer-events:auto}
+.actions button{width:76px;height:55px;font-size:13px}
+#restart{position:absolute;top:12px;right:12px;z-index:9;background:#102b4d;color:white;border:1px solid white;border-radius:8px;padding:9px}
 </style>
 </head>
 <body>
-<header>
-<h1>⚽ FOOTBAL 22 LEAGUE</h1>
-<p>MODO CARREIRA • SUA HISTÓRIA NO FUTEBOL</p>
-</header>
-
-<section id="home" class="panel">
-<h2>🏆 MODO CARREIRA</h2>
-<p>Comece sua jornada e torne-se uma lenda!</p>
-<button class="green" onclick="show('create')">CRIAR JOGADOR</button>
-<button class="blue" onclick="continueCareer()">CONTINUAR CARREIRA</button>
-<p><small>Seu progresso fica salvo neste celular.</small></p>
-</section>
-
-<section id="create" class="panel hidden">
-<h2>👤 CRIE SEU JOGADOR</h2>
-<input id="name" placeholder="Nome do jogador" maxlength="22">
-<select id="position">
-<option value="Atacante">Atacante</option>
-<option value="Ponta">Ponta</option>
-<option value="Meio-campista">Meio-campista</option>
-<option value="Volante">Volante</option>
-<option value="Zagueiro">Zagueiro</option>
-<option value="Goleiro">Goleiro</option>
-</select>
-<select id="club">
-<option>FC Brasil</option>
-<option>Real Madrid</option>
-<option>Barcelona</option>
-<option>Manchester City</option>
-<option>Liverpool</option>
-<option>PSG</option>
-</select>
-<select id="country">
-<option>Brasil</option>
-<option>Portugal</option>
-<option>Argentina</option>
-<option>França</option>
-<option>Inglaterra</option>
-</select>
-<input id="number" type="number" min="1" max="99" value="10" placeholder="Número da camisa">
-<button class="green" onclick="createPlayer()">COMEÇAR CARREIRA ⚽</button>
-<button class="red" onclick="show('home')">VOLTAR</button>
-</section>
-
-<section id="career" class="panel hidden">
-<h2>⭐ MEU JOGADOR</h2>
-<h2 id="playerName"></h2>
-<p id="details"></p>
-<div style="font-size:40px">👕⚽</div>
-<h2 id="overall">OVERALL 60</h2>
-<div id="stats"></div>
-<div class="stat"><span>Temporada</span><b id="season">1</b></div>
-<div class="stat"><span>Partidas</span><b id="matches">0</b></div>
-<div class="stat"><span>Gols</span><b id="goals">0</b></div>
-<div class="stat"><span>Assistências</span><b id="assists">0</b></div>
-<div class="stat"><span>Experiência</span><b id="xp">0</b></div>
-<button class="green" onclick="play()">JOGAR PARTIDA ⚽</button>
-<button onclick="train()">TREINAR 💪</button>
-<button class="blue" onclick="market()">PROPOSTAS DE CLUBES 📩</button>
-<button onclick="show('home')">MENU PRINCIPAL</button>
-</section>
-
-<section id="match" class="hidden">
-<h2>⚽ DIA DE JOGO</h2>
-<div id="score">SEU TIME 0 × 0 ADVERSÁRIO</div>
-<div id="field">
-<div id="goal"></div>
-<div id="player"></div>
-<div id="ball"></div>
+<div id="top">
+ <div id="title">FOOTBAL 22 LEAGUE</div>
+ <div id="score">AZUL 0 × 0 VERMELHO</div>
+ <div id="message">Prepare-se para jogar!</div>
 </div>
-<p id="message">Mova seu jogador e chute!</p>
-<div class="controls">
-<div class="pad">
-<span></span><button data-dir="up">▲</button><span></span>
-<button data-dir="left">◀</button>
-<button data-dir="down">▼</button>
-<button data-dir="right">▶</button>
+<button id="restart">REINICIAR</button>
+<div id="controls">
+ <div class="pad">
+  <button class="btn up" data-key="up">▲</button>
+  <button class="btn left" data-key="left">◀</button>
+  <button class="btn down" data-key="down">▼</button>
+  <button class="btn right" data-key="right">▶</button>
+ </div>
+ <div class="actions">
+  <button class="btn" id="sprint">CORRER</button>
+  <button class="btn" id="pass">PASSE</button>
+  <button class="btn" id="shoot">CHUTAR</button>
+ </div>
 </div>
-<button class="red" onclick="shoot()">CHUTAR ⚽</button>
-</div>
-<button class="blue" onclick="finishMatch()">ENCERRAR PARTIDA</button>
-</section>
 
-<section id="market" class="panel hidden">
-<h2>📩 MERCADO DE CLUBES</h2>
-<p id="offers"></p>
-<button class="green" onclick="acceptOffer()">ACEITAR PROPOSTA</button>
-<button onclick="show('career')">VOLTAR</button>
-</section>
-
+<script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
 <script>
-let career=null,px=50,py=75,matchGoals=0,matchAssists=0,done=false;
-function show(id){
- document.querySelectorAll("body > section").forEach(s=>s.classList.add("hidden"));
- document.getElementById(id).classList.remove("hidden");
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x83b9df);
+scene.fog=new THREE.Fog(0x83b9df,55,100);
+
+const camera=new THREE.PerspectiveCamera(48,innerWidth/innerHeight,.1,150);
+camera.position.set(0,29,35);
+camera.lookAt(0,0,0);
+
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
+renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffffff,0x42633c,2));
+const sun=new THREE.DirectionalLight(0xffffff,2.2);
+sun.position.set(-10,25,12);
+sun.castShadow=true;
+sun.shadow.mapSize.set(2048,2048);
+scene.add(sun);
+
+const green=new THREE.Mesh(
+ new THREE.PlaneGeometry(44,28),
+ new THREE.MeshStandardMaterial({color:0x287d35,roughness:.9})
+);
+green.rotation.x=-Math.PI/2;
+green.receiveShadow=true;
+scene.add(green);
+
+const stripes=[];
+for(let i=0;i<8;i++){
+ const s=new THREE.Mesh(
+  new THREE.PlaneGeometry(5.5,28),
+  new THREE.MeshStandardMaterial({color:i%2?0x287d35:0x328d3c})
+ );
+ s.rotation.x=-Math.PI/2;
+ s.position.set(-19.25+i*5.5,.012,0);
+ scene.add(s);
 }
-function save(){
- localStorage.setItem("f22career",JSON.stringify(career));
+
+function line(x1,z1,x2,z2,color=0xffffff){
+ const points=[new THREE.Vector3(x1,.04,z1),new THREE.Vector3(x2,.04,z2)];
+ const obj=new THREE.Line(
+  new THREE.BufferGeometry().setFromPoints(points),
+  new THREE.LineBasicMaterial({color})
+ );
+ scene.add(obj);
 }
-function createPlayer(){
- let n=document.getElementById("name").value.trim();
- if(!n){alert("Digite o nome do jogador!");return}
- career={
- name:n,
- position:document.getElementById("position").value,
- club:document.getElementById("club").value,
- country:document.getElementById("country").value,
- number:document.getElementById("number").value,
- overall:60,speed:60,shot:60,pass:60,dribble:60,
- matches:0,goals:0,assists:0,xp:0,season:1
- };
- save();update();show("career");
+line(-21,-13,21,-13);
+line(-21,13,21,13);
+line(-21,-13,-21,13);
+line(21,-13,21,13);
+line(0,-13,0,13);
+const circle=new THREE.Mesh(
+ new THREE.RingGeometry(4.8,4.95,64),
+ new THREE.MeshBasicMaterial({color:0xffffff,side:THREE.DoubleSide})
+);
+circle.rotation.x=-Math.PI/2;
+circle.position.y=.05;
+scene.add(circle);
+line(-21,-7,-15,-7);
+line(-15,-7,-15,7);
+line(-15,7,-21,7);
+line(21,-7,15,-7);
+line(15,-7,15,7);
+line(15,7,21,7);
+
+function goal(x){
+ const mat=new THREE.MeshStandardMaterial({color:0xffffff});
+ const group=new THREE.Group();
+ function bar(px,py,pz,sx,sy,sz){
+  const m=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),mat);
+  m.position.set(px,py,pz);
+  group.add(m);
+ }
+ bar(x,1.3,-3.5,.18,2.6,.18);
+ bar(x,1.3,3.5,.18,2.6,.18);
+ bar(x,2.6,0,.18,.18,7);
+ scene.add(group);
 }
-function continueCareer(){
- let data=localStorage.getItem("f22career");
- if(!data){alert("Você ainda não criou uma carreira!");show("create");return}
- career=JSON.parse(data);update();show("career");
+goal(-21);
+goal(21);
+
+function makePlayer(color,x,z){
+ const group=new THREE.Group();
+ const shirt=new THREE.Mesh(
+  new THREE.CylinderGeometry(.48,.57,1.15,16),
+  new THREE.MeshStandardMaterial({color,roughness:.7})
+ );
+ shirt.position.y=1.15;
+ shirt.castShadow=true;
+ group.add(shirt);
+ const head=new THREE.Mesh(
+  new THREE.SphereGeometry(.3,16,12),
+  new THREE.MeshStandardMaterial({color:0xd9a47c})
+ );
+ head.position.y=1.95;
+ head.castShadow=true;
+ group.add(head);
+ const shorts=new THREE.Mesh(
+  new THREE.CylinderGeometry(.43,.45,.4,12),
+  new THREE.MeshStandardMaterial({color:0x172033})
+ );
+ shorts.position.y=.45;
+ group.add(shorts);
+ const legmat=new THREE.MeshStandardMaterial({color:0x20242a});
+ for(let side of [-1,1]){
+  const leg=new THREE.Mesh(new THREE.CylinderGeometry(.12,.14,.55,10),legmat);
+  leg.position.set(side*.2,.15,0);
+  group.add(leg);
+ }
+ group.position.set(x,0,z);
+ scene.add(group);
+ return group;
 }
-function update(){
- document.getElementById("playerName").textContent=career.name;
- document.getElementById("details").textContent=
- career.position+" • "+career.club+" • "+career.country+" • Camisa "+career.number;
- document.getElementById("overall").textContent="OVERALL "+career.overall;
- ["matches","goals","assists","xp","season"].forEach(k=>{
- document.getElementById(k).textContent=career[k];
- });
- document.getElementById("stats").innerHTML=
- ["speed","shot","pass","dribble"].map(k=>
- '<div class="stat"><span>'+({speed:"Velocidade",shot:"Chute",pass:"Passe",dribble:"Drible"}[k])+'</span><b>'+career[k]+'</b></div><div class="bar"><span style="width:'+career[k]+'%"></span></div>'
- ).join("");
- save();
+
+const blue=[
+ makePlayer(0x0878ff,-5,0),
+ makePlayer(0x0878ff,-10,-7),
+ makePlayer(0x0878ff,-10,7),
+ makePlayer(0x0878ff,-16,-3),
+ makePlayer(0x0878ff,-18,0)
+];
+const red=[
+ makePlayer(0xe52323,5,0),
+ makePlayer(0xe52323,10,-7),
+ makePlayer(0xe52323,10,7),
+ makePlayer(0xe52323,16,-3),
+ makePlayer(0xe52323,18,0)
+];
+let selected=0;
+let ball;
+function makeBall(){
+ if(ball)scene.remove(ball);
+ ball=new THREE.Mesh(
+  new THREE.SphereGeometry(.38,24,16),
+  new THREE.MeshStandardMaterial({color:0xffffff,roughness:.55})
+ );
+ ball.position.set(0,.4,0);
+ ball.castShadow=true;
+ scene.add(ball);
 }
-function train(){
- if(career.xp<0)return;
- let stat=["speed","shot","pass","dribble"][Math.floor(Math.random()*4)];
- if(career[stat]<99){
- career[stat]=Math.min(99,career[stat]+2);
- career.xp+=10;
- career.overall=Math.min(99,career.overall+1);
- update();
- alert("Treinamento concluído! "+stat+" melhorou!");
- }else alert("Seu atributo já está no máximo!");
+makeBall();
+
+let velocity=new THREE.Vector3();
+let blueScore=0,redScore=0;
+let keys={};
+let sprint=false;
+let last=0;
+
+function updateScore(){
+ document.getElementById("score").textContent=
+ "AZUL "+blueScore+" × "+redScore+" VERMELHO";
 }
-function play(){
- matchGoals=0;matchAssists=0;done=false;px=50;py=75;
- document.getElementById("score").textContent="SEU TIME 0 × 0 ADVERSÁRIO";
- document.getElementById("message").textContent="Mova seu jogador e chute!";
- draw();show("match");
+function message(t){
+ document.getElementById("message").textContent=t;
 }
-function draw(){
- document.getElementById("player").style.left=px+"%";
- document.getElementById("player").style.top=py+"%";
- document.getElementById("ball").style.left=px+2+"%";
- document.getElementById("ball").style.top=py-5+"%";
+function resetBall(){
+ ball.position.set(0,.4,0);
+ velocity.set(0,0,0);
+ blue[0].position.set(-5,0,0);
+ red[0].position.set(5,0,0);
 }
-function move(d){
- if(done)return;
- if(d==="up")py-=3;
- if(d==="down")py+=3;
- if(d==="left")px-=3;
- if(d==="right")px+=3;
- px=Math.max(5,Math.min(92,px));
- py=Math.max(8,Math.min(88,py));
- draw();
+function movePlayer(dt){
+ const p=blue[selected];
+ const dir=new THREE.Vector3(
+  (keys.right?1:0)-(keys.left?1:0),
+  0,
+  (keys.down?1:0)-(keys.up?1:0)
+ );
+ if(dir.length()>0){
+  dir.normalize();
+  const speed=sprint?10:6;
+  p.position.addScaledVector(dir,speed*dt);
+  p.position.x=THREE.MathUtils.clamp(p.position.x,-20,20);
+  p.position.z=THREE.MathUtils.clamp(p.position.z,-12,12);
+  p.rotation.y=Math.atan2(dir.x,dir.z);
+ }
 }
-document.querySelectorAll("[data-dir]").forEach(b=>{
- let timer;
+function kick(power){
+ const p=blue[selected];
+ const distance=p.position.distanceTo(ball.position);
+ if(distance<2.2){
+  const direction=new THREE.Vector3(1,0,0);
+  direction.z=(ball.position.z-p.position.z)*.12;
+  direction.normalize();
+  velocity.copy(direction.multiplyScalar(power));
+  velocity.y=power*.12;
+  message(power>12?"CHUTE!":"PASSE!");
+ }else{
+  message("Chegue mais perto da bola!");
+ }
+}
+function ai(dt){
+ for(let i=0;i<red.length;i++){
+  const p=red[i];
+  const target=i===4?
+   new THREE.Vector3(18,0,ball.position.z*.3):
+   new THREE.Vector3(ball.position.x+1,0,ball.position.z);
+  const d=target.clone().sub(p.position);
+  if(d.length()>.5){
+   d.normalize();
+   p.position.addScaledVector(d,(i===4?2.5:3.5)*dt);
+   p.position.x=THREE.MathUtils.clamp(p.position.x,-20,20);
+   p.position.z=THREE.MathUtils.clamp(p.position.z,-12,12);
+  }
+  if(p.position.distanceTo(ball.position)<1.2&&Math.random()<.025){
+   velocity.set(-8,1,(Math.random()-.5)*5);
+  }
+ }
+}
+function ballPhysics(dt){
+ velocity.y-=12*dt;
+ ball.position.addScaledVector(velocity,dt);
+ if(ball.position.y<.38){
+  ball.position.y=.38;
+  velocity.y=Math.abs(velocity.y)*.45;
+  if(Math.abs(velocity.y)<.6)velocity.y=0;
+ }
+ velocity.x*=Math.pow(.985,dt*60);
+ velocity.z*=Math.pow(.985,dt*60);
+ if(Math.abs(velocity.x)<.04)velocity.x=0;
+ if(Math.abs(velocity.z)<.04)velocity.z=0;
+ if(Math.abs(ball.position.z)>13){
+  ball.position.z=Math.sign(ball.position.z)*13;
+  velocity.z*=-.5;
+ }
+ for(const p of [...blue,...red]){
+  const dx=ball.position.x-p.position.x;
+  const dz=ball.position.z-p.position.z;
+  const d=Math.hypot(dx,dz);
+  if(d<1.05&&ball.position.y<1.5){
+   const a=Math.atan2(dz,dx);
+   velocity.x+=Math.cos(a)*1.2;
+   velocity.z+=Math.sin(a)*1.2;
+  }
+ }
+ if(ball.position.x>21){
+  if(Math.abs(ball.position.z)<3.5){
+   blueScore++;
+   updateScore();
+   message("GOOOOOOL DO AZUL!");
+  }else message("Bola saiu!");
+  resetBall();
+ }
+ if(ball.position.x<-21){
+  if(Math.abs(ball.position.z)<3.5){
+   redScore++;
+   updateScore();
+   message("GOL DO VERMELHO!");
+  }else message("Bola saiu!");
+  resetBall();
+ }
+}
+function animate(t){
+ requestAnimationFrame(animate);
+ const dt=Math.min((t-last)/1000,.04);
+ last=t;
+ movePlayer(dt);
+ ai(dt);
+ ballPhysics(dt);
+ renderer.render(scene,camera);
+}
+requestAnimationFrame(animate);
+
+document.querySelectorAll("[data-key]").forEach(b=>{
+ const k=b.dataset.key;
  b.addEventListener("pointerdown",e=>{
- e.preventDefault();move(b.dataset.dir);
- timer=setInterval(()=>move(b.dataset.dir),100);
+  e.preventDefault();keys[k]=true;
  });
- ["pointerup","pointerleave","pointercancel"].forEach(ev=>b.addEventListener(ev,()=>clearInterval(timer)));
+ ["pointerup","pointerleave","pointercancel"].forEach(ev=>
+  b.addEventListener(ev,()=>keys[k]=false)
+ );
 });
-function shoot(){
- if(done)return;
- let goal=Math.random()<(.30+career.shot/180);
- if(goal){matchGoals++;document.getElementById("message").textContent="⚽ GOOOOOL!";}
- else document.getElementById("message").textContent="O goleiro defendeu!";
- document.getElementById("score").textContent="SEU TIME "+matchGoals+" × 0 ADVERSÁRIO";
- career.xp+=goal?25:5;
- draw();
-}
-function finishMatch(){
- if(done)return;
- done=true;
- career.matches++;
- career.goals+=matchGoals;
- career.assists+=matchAssists;
- career.overall=Math.min(99,career.overall+(matchGoals>0?1:0));
- update();
- alert("Partida encerrada! Você marcou "+matchGoals+" gol(s). Ganhou experiência!");
- show("career");
-}
-function market(){
- let clubs=["Real Madrid","Barcelona","Manchester City","Liverpool","PSG"];
- document.getElementById("offers").textContent=
- "Uma proposta chegou do "+clubs[Math.floor(Math.random()*clubs.length)]+"! Deseja mudar de clube?";
- show("market");
-}
-function acceptOffer(){
- let clubs=["Real Madrid","Barcelona","Manchester City","Liverpool","PSG"];
- career.club=clubs[Math.floor(Math.random()*clubs.length)];
- career.overall=Math.min(99,career.overall+2);
- update();alert("Transferência concluída! Bem-vindo ao "+career.club+"!");
- show("career");
-}
+document.getElementById("sprint").addEventListener("pointerdown",()=>{
+ sprint=true;
+});
+["pointerup","pointerleave","pointercancel"].forEach(ev=>
+ document.getElementById("sprint").addEventListener(ev,()=>sprint=false)
+);
+document.getElementById("shoot").onclick=()=>kick(17);
+document.getElementById("pass").onclick=()=>kick(9);
+document.getElementById("restart").onclick=()=>{
+ blueScore=0;redScore=0;updateScore();resetBall();message("Partida reiniciada!");
+};
+window.addEventListener("keydown",e=>{
+ if(e.key==="ArrowUp"||e.key==="w")keys.up=true;
+ if(e.key==="ArrowDown"||e.key==="s")keys.down=true;
+ if(e.key==="ArrowLeft"||e.key==="a")keys.left=true;
+ if(e.key==="ArrowRight"||e.key==="d")keys.right=true;
+});
+window.addEventListener("keyup",e=>{
+ if(e.key==="ArrowUp"||e.key==="w")keys.up=false;
+ if(e.key==="ArrowDown"||e.key==="s")keys.down=false;
+ if(e.key==="ArrowLeft"||e.key==="a")keys.left=false;
+ if(e.key==="ArrowRight"||e.key==="d")keys.right=false;
+});
+window.addEventListener("resize",()=>{
+ camera.aspect=innerWidth/innerHeight;
+ camera.updateProjectionMatrix();
+ renderer.setSize(innerWidth,innerHeight);
+});
 </script>
 </body>
 </html>
